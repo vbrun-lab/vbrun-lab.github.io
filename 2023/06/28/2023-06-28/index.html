@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>时间序列（三）—— 带有衍生变量的时间序列预测--SARIMAX | vbrun-lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="我们要使用的是statsmodels包的SARIMAX这个模型，这并不是单一的模型，而是个大合集的模型，可以设置多个参数，如： 如果我们只想用ARIMA的模型，那么只需要设置order参数即可如果想使用 ARIMA+季节性，即（SARIMA）模型，则设置order与seasonal_order参数即可如果想使用 ARIMA+衍生变量，即（ARIMAX）模型，则设置order与exog参数即可如果想">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时间序列（三）—— 带有衍生变量的时间序列预测--SARIMAX">
+<meta property="og:url" content="https://vbrun-lab.github.io/2023/06/28/2023-06-28/index.html">
+<meta property="og:site_name" content="vbrun-lab">
+<meta property="og:description" content="我们要使用的是statsmodels包的SARIMAX这个模型，这并不是单一的模型，而是个大合集的模型，可以设置多个参数，如： 如果我们只想用ARIMA的模型，那么只需要设置order参数即可如果想使用 ARIMA+季节性，即（SARIMA）模型，则设置order与seasonal_order参数即可如果想使用 ARIMA+衍生变量，即（ARIMAX）模型，则设置order与exog参数即可如果想">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://vbrun-lab.github.io/images/time2-1.webp">
+<meta property="og:image" content="https://vbrun-lab.github.io/images/time2-2.webp">
+<meta property="article:published_time" content="2023-06-28T14:40:06.000Z">
+<meta property="article:modified_time" content="2023-07-07T14:57:56.968Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="时间序列">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://vbrun-lab.github.io/images/time2-1.webp">
+  
+    <link rel="alternate" href="/atom.xml" title="vbrun-lab" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">vbrun-lab</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://vbrun-lab.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2023-06-28" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/28/2023-06-28/" class="article-date">
+  <time class="dt-published" datetime="2023-06-28T14:40:06.000Z" itemprop="datePublished">2023-06-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      时间序列（三）—— 带有衍生变量的时间序列预测--SARIMAX
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>我们要使用的是statsmodels包的SARIMAX这个模型，这并不是单一的模型，而是个大合集的模型，可以设置多个参数，如：</p>
+<p>如果我们只想用ARIMA的模型，那么只需要设置order参数即可<br>如果想使用 ARIMA+季节性，即（SARIMA）模型，则设置order与seasonal_order参数即可<br>如果想使用 ARIMA+衍生变量，即（ARIMAX）模型，则设置order与exog参数即可<br>如果想使用 ARIMA+季节性+衍生变量，即（SARIMAX）模型，则设置order，seasonal_order与exog参数<br>官方文档：<a target="_blank" rel="noopener" href="https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html">https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html</a><br>其中：</p>
+<p>endog：训练的时序数据，也是第一个位置的参数对应的值<br>order：ARIMA的参数，输入格式是(p,d,q)<br>seasonal_order：季节性的参数<br>exog：衍生变量的矩阵。</p>
+<p>SARIMAX适用于<strong>具有趋势 且&#x2F;或 季节性成分以及外生变量的单变量时间序列</strong>。</p>
+<p>SARIMAX 模型 是 SARIMA 模型的扩展，其中还包括外生变量的建模。</p>
+<p>外生变量也称为协变量，可以被认为是并行输入序列，它们在与原始序列相同的时间步长中进行观察。初级序列可被称为内源数据以将其与外源序列进行对比。外生变量的观测值在每个时间步直接包含在模型中，并且不以与主要内生序列相同的方式建模（例如作为 AR、MA 等过程）。</p>
+<p>SARIMAX 方法也可用于对包含外生变量的包含模型进行建模，例如 ARX、MAX、ARMAX 和 ARIMAX。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># SARIMAX example</span></span><br><span class="line">from statsmodels.tsa.statespace.sarimax import SARIMAX</span><br><span class="line">from random import random</span><br><span class="line"><span class="comment"># contrived dataset</span></span><br><span class="line">data1 = [x + random() <span class="keyword">for</span> x <span class="keyword">in</span> range(1, 100)]</span><br><span class="line">data2 = [x + random() <span class="keyword">for</span> x <span class="keyword">in</span> range(101, 200)]</span><br><span class="line"><span class="comment"># fit model</span></span><br><span class="line">model = SARIMAX(data1, exog=data2, order=(1, 1, 1), seasonal_order=(0, 0, 0, 0))</span><br><span class="line">model_fit = model.fit(disp=False)</span><br><span class="line"><span class="comment"># make prediction</span></span><br><span class="line">exog2 = [200 + random()]</span><br><span class="line">yhat = model_fit.predict(len(data1), len(data1), exog=[exog2])</span><br><span class="line"><span class="built_in">print</span>(yhat)</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何使用多个额外外部变量"><a href="#如何使用多个额外外部变量" class="headerlink" title="如何使用多个额外外部变量"></a>如何使用多个额外外部变量</h4><p>在 statsmodels 中，对于 SARIMAX 或 ARIMA 模型，我想使用多个额外的外部变量(外生变量)。例如。我想使用滞后 3 的 AR 预测 yield 时间序列，使用滞后 4 的 AR 和天气温度时间序列以及滞后 3 的 AR 的另一个市场价格变量来预测时间 t 的 yield 。这似乎不可能？关于如何做到这一点的任何示例或解释？</p>
+<p><strong>最佳答案</strong></p>
+<p>首先，您必须将外生输入定义为具有维度 nobsxk 的数组类型结构，其中 nobs 是内生观察的数量(即假设您有一个时间序列，时间序列的长度)和 k 的数量你额外的外生变量。假设您为此目的使用 ndarray，您可以从类似的内容开始</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exog = np.empty([nobs, k])</span><br></pre></td></tr></table></figure>
+
+<p>然后用外生变量的值填充它。然后，按照以下示例定义模型:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = sm.tsa.SARIMAX(endog=series, exog=exog, order=order, seasonal_order=seasonal_order).fit(start_params=[0, 0, 0, 0, 0, 1])</span><br></pre></td></tr></table></figure>
+
+<p>其中 series 是您的原始时间序列，exog 外源输入，排序 (p,d,q) 元组和 season_order a (P,D,Q,s) 元组。您应该注意 start_params 列表，我发现它对于在我的案例中成功构建 sarimax 模型至关重要。</p>
+<p>当我没有使用任何外源输入时，start_params 列表是 start_params &#x3D; [0, 0, 0, 1] for (p,d,q) &#x3D; (1,0,0) and (P,D,Q,s) &#x3D; (1,0,0,37)。</p>
+<p>当我添加 3 个新的外生输入时，我将 start_params 列表设置为 start_params &#x3D; [0, 0, 0, 0, 1, 1] 如果您注意到它有 2 个附加元素。</p>
+<p>我想(我不确定也没有彻底检查过)如果您在模型中添加 k 个外源输入，您必须在 start_params 列表中添加 k - 1 个附加元素才能成功构建 sarimax 模型。</p>
+<h4 id="SARIMAX股票价格预测"><a href="#SARIMAX股票价格预测" class="headerlink" title="SARIMAX股票价格预测"></a>SARIMAX股票价格预测</h4><p>SARIMA与ARIMA在股价序列的预测效果近似。以600519贵州茅台历史价格数据预测，存在较大的误差、</p>
+<p><img src="/images/time2-1.webp"></p>
+<p><strong>ARIMA在python的实现</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">X = data.close</span><br><span class="line">train,<span class="built_in">test</span> = X[0:-30],X[-30:]</span><br><span class="line">stepwise_model = auto_arima(train,start_p=1, start_q=1,</span><br><span class="line">    max_p=7, max_q=7, seasonal=False,</span><br><span class="line">    d=None, trace=True,error_action=<span class="string">&#x27;ignore&#x27;</span>,suppress_warnings=True, </span><br><span class="line">stepwise=True)</span><br><span class="line">stepwise_model.summary()</span><br><span class="line"></span><br><span class="line">import matplotlib.pyplot as plt </span><br><span class="line">plt.rcParams[<span class="string">&#x27;figure.figsize&#x27;</span>] = [15,7]</span><br><span class="line">plt.plot(train,label=<span class="string">&#x27;trian&#x27;</span>)</span><br><span class="line">plt.plot(<span class="built_in">test</span>,label=<span class="string">&#x27;test&#x27;</span>)</span><br><span class="line">plt.plot(forecast,label=<span class="string">&#x27;Predicted&#x27;</span>)</span><br><span class="line">plt.plot(df_conf[<span class="string">&#x27;Upper_bound&#x27;</span>] , label =<span class="string">&#x27;Confidence Interval Upper bound&#x27;</span>)</span><br><span class="line">plt.plot(df_conf[<span class="string">&#x27;Lower_bound&#x27;</span>] , label = <span class="string">&#x27;Confidence Interval Lower bound&#x27;</span>)</span><br><span class="line">plt.legend(loc=<span class="string">&#x27;best&#x27;</span>)</span><br><span class="line">plt.show()</span><br><span class="line">stepwise_model.plot_diagnostics()</span><br></pre></td></tr></table></figure>
+
+<p>SARIMAX是一个具有外部影响变量的SARIMA模型，X为外生变量的向量。</p>
+<p>同样可以理解为是在SARIMA模型的基础上引入了外生冲击，例如要预测股票收盘价，外生变量可以是股票的开盘价。</p>
+<p>可见引入当日开盘价作为外生变量的SARIMAX模型可以跟得上价格序列的演变了，拟合程度相比于ARIMA、SARIMA有较大的提高。</p>
+<p><img src="/images/time2-2.webp"></p>
+<p><strong>SARIMAX在Python的实现</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> name,column <span class="keyword">in</span> data[[<span class="string">&#x27;close&#x27;</span>,<span class="string">&#x27;open&#x27;</span>,<span class="string">&#x27;high&#x27;</span>,<span class="string">&#x27;low&#x27;</span>]].iteritems():</span><br><span class="line">    adf_test_func(data[name],name)</span><br><span class="line">X = data.close</span><br><span class="line">actualtrain,actualtest = X[0:-30],X[-30:]</span><br><span class="line">exoX = data.open</span><br><span class="line">exotrain,exotest = exoX[0:-30],exoX[-30:]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> m <span class="keyword">in</span> [1,4,7,12,52]:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span>*100)</span><br><span class="line">    <span class="built_in">print</span>(f<span class="string">&#x27;Fitting SARIMAX for Seasonal value m = &#123;str(m)&#125;&#x27;</span>)</span><br><span class="line">    stepwise_model = auto_arima(actualtrain,X = pd.DataFrame(exotrain), start_p=1, start_q=1,</span><br><span class="line">                    max_p=7, max_q=7, seasonal=True, start_P=1, </span><br><span class="line">                    start_Q=1, max_P=7, max_D=7, max_Q=7, m=m,</span><br><span class="line">                    d=None, D=None, trace=True, error_action=<span class="string">&#x27;ignore&#x27;</span>, suppress_warnings=True, </span><br><span class="line">                    stepwise=True)</span><br><span class="line">    <span class="built_in">print</span>(f<span class="string">&#x27;Model summary for m = &#123;str(m)&#125;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;-&quot;</span>*100)</span><br><span class="line">    stepwise_model.summary()</span><br><span class="line">    forecast,conf_int = stepwise_model.predict(n_periods=30,X = pd.DataFrame(exotest),return_conf_int=True)</span><br><span class="line">    df_conf = pd.DataFrame(conf_int,columns=[<span class="string">&#x27;Upper_bound&#x27;</span>,<span class="string">&#x27;Lower_bound&#x27;</span>])</span><br><span class="line">    df_conf[<span class="string">&#x27;new_index&#x27;</span>] = range(1675,1705)</span><br><span class="line">    df_conf = df_conf.set_index(<span class="string">&#x27;new_index&#x27;</span>)</span><br><span class="line">    forecast = pd.DataFrame(forecast,columns=[<span class="string">&#x27;close_pred&#x27;</span>])</span><br><span class="line">    forecast[<span class="string">&#x27;new_index&#x27;</span>] = range(1675,1705)</span><br><span class="line">    forecast = forecast.set_index(<span class="string">&#x27;new_index&#x27;</span>)</span><br><span class="line">    timeseries_evaluation_fun(actualtest,forecast)</span><br><span class="line"></span><br><span class="line">    import matplotlib.pyplot as plt </span><br><span class="line">    plt.rcParams[<span class="string">&#x27;figure.figsize&#x27;</span>]=[15,7]</span><br><span class="line">    plt.figure()</span><br><span class="line">    plt.plot(actualtrain,label=<span class="string">&#x27;train&#x27;</span>)</span><br><span class="line">    plt.plot(actualtest,label=<span class="string">&#x27;test&#x27;</span>)</span><br><span class="line">    plt.plot(forecast,label = f<span class="string">&#x27;Predicted with m=&#123;str(m)&#125;&#x27;</span>)</span><br><span class="line">    plt.plot(df_conf[<span class="string">&#x27;Upper_bound&#x27;</span>],label=<span class="string">&#x27;Confidence Interval Upper&#x27;</span>)</span><br><span class="line">    plt.plot(df_conf[<span class="string">&#x27;Lower_bound&#x27;</span>],label=<span class="string">&#x27;Confidence Interval Lower&#x27;</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">&#x27;best&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;-&quot;</span>*100)</span><br><span class="line">    stepwise_model.plot_diagnostics()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;-&quot;</span>*100)</span><br></pre></td></tr></table></figure>
+
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_35757704/article/details/127047308">python使用ARIMAX带有衍生变量的时间序列预测_python arimax_呆萌的代Ma的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/410812961">动手实战 | Statsmodels 中经典的11种时间序列预测方法 - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.coder.work/article/4757992">machine-learning - 如何将多个外生变量输入到 statsmodel 中的 SARIMAX 模型中？ - IT工具网 (coder.work)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/576030924">python时间序列从ARIMA到SARIMAX - 股票 - 知乎 (zhihu.com)</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://vbrun-lab.github.io/2023/06/28/2023-06-28/" data-id="cljspbji40000i48bd6113pc3" data-title="时间序列（三）—— 带有衍生变量的时间序列预测--SARIMAX" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/" rel="tag">时间序列</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/06/27/2023-06-27/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">时间序列（二）——复现ARIMA预测AirPassenger</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/" rel="tag">github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/" rel="tag">时间序列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/" style="font-size: 20px;">时间序列</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 20px;">机器学习</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/06/28/2023-06-28/">时间序列（三）—— 带有衍生变量的时间序列预测--SARIMAX</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/27/2023-06-27/">时间序列（二）——复现ARIMA预测AirPassenger</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/2023-06-17/">时间序列学习（一）——基础</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/14/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/14/first-Blog/">搭建Hexo博客小屋</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
