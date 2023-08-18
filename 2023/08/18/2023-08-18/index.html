@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>时间序列序列学习（五）--Prophet | vbrun-lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Prophet的安装在安装Prophet的时候并没有想官网介绍的那么简单，首先需要先安装Pystan,但是直接pip install pystan会报编译器内部错误，先conda update –force conda ，然后，conda install pystan，再然后使用pip install prophet 进行安装。 Prophet的模型训练及预测，类似Sklearn的方法，训练fit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时间序列序列学习（五）--Prophet">
+<meta property="og:url" content="https://vbrun-lab.github.io/2023/08/18/2023-08-18/index.html">
+<meta property="og:site_name" content="vbrun-lab">
+<meta property="og:description" content="Prophet的安装在安装Prophet的时候并没有想官网介绍的那么简单，首先需要先安装Pystan,但是直接pip install pystan会报编译器内部错误，先conda update –force conda ，然后，conda install pystan，再然后使用pip install prophet 进行安装。 Prophet的模型训练及预测，类似Sklearn的方法，训练fit">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-08-18T06:13:56.000Z">
+<meta property="article:modified_time" content="2023-08-18T06:30:05.796Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="时间序列">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="vbrun-lab" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">vbrun-lab</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://vbrun-lab.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2023-08-18" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/08/18/2023-08-18/" class="article-date">
+  <time class="dt-published" datetime="2023-08-18T06:13:56.000Z" itemprop="datePublished">2023-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      时间序列序列学习（五）--Prophet
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h4 id="Prophet的安装"><a href="#Prophet的安装" class="headerlink" title="Prophet的安装"></a>Prophet的安装</h4><p>在安装Prophet的时候并没有想官网介绍的那么简单，首先需要先安装Pystan,但是直接<code>pip install pystan</code>会报编译器内部错误，先conda update –force conda ，然后，conda install pystan，再然后使用pip install prophet 进行安装。</p>
+<p>Prophet的模型训练及预测，类似Sklearn的方法，训练fit()、预测predict()。这里由于我们了解数据的变动会受到季节、周、天的影响，存在一定的规律性，因此我们将这三个参数设置成True，并且采用中国的假期模式，其余参数均保持默认，代码如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">model = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True)</span><br><span class="line">model.add_country_holidays(country_name=<span class="string">&quot;CN&quot;</span>)</span><br><span class="line">model.fit(data)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Prophet参数"><a href="#Prophet参数" class="headerlink" title="Prophet参数"></a>Prophet参数</h4><p>参数及默认值介绍，内容理论可参考「原理篇」：</p>
+<p>• growth：趋势函数设置，默认线性“linear”，可选非线性“logistic”。<br>• changepoints：选择突变点，默认自动选择“None”。例如：双十一订单突增，指定突变点。<br>• n_changepoints：突变点个数，默认“25个”。如果changepoints指定，则这个参数就废弃了；如果changepoints没指定，则会从输入的历史数据前80%中自动选取25个突变点。<br>• changepoint_range：突变点数据范围，默认“80%”。同样，如果changepoints指定，则这个参数就废弃了。<br>• changepoint_prior_scale: 调节“changepoints”发现强度，默认“0.05”。值越大对历史数据拟合程度越强，但会增加过拟合的风险。<br>• yearly_seasonality: 数据是否有年季节性，默认“自动检测”。<br>• weekly_seasonality: 数据是否有周季节性，默认“自动检测”。<br>• daily_seasonality: 数据是否有天季节性，默认“自动检测”。<br>• holidays：指定节假日，默认“None”，支持手动输入指定节假日。以DataFrame格式输入，涵盖：必须列【holiday(string)、ds(date)】、可选列【lower_window(int)、upper_window(int)，指定影响的前后窗口期】。<br>• seasonality_mode: 季节性效应模式，默认加法模式“additive”，可选“multiplicative”乘法模式。<br>• seasonality_prior_scale: 调节季节性效应模式强度，默认“10”。值越大，季节性对模型影响越大。<br>• holidays_prior_scale: 调节节假日模式强度，默认“10”。值越大，节假日对模型影响越大。</p>
+<h4 id="实验：预测未来一个月的现金流入"><a href="#实验：预测未来一个月的现金流入" class="headerlink" title="实验：预测未来一个月的现金流入"></a>实验：预测未来一个月的现金流入</h4><p><strong>一、使用sktime框架内的Prophet</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## sktime框架下的Prophet无法引入新的特征</span></span><br><span class="line">import pandas as pd</span><br><span class="line">from sktime.forecasting.fbprophet import Prophet </span><br><span class="line">from sktime.forecasting.base import ForecastingHorizon</span><br><span class="line">from sktime.forecasting.model_selection import temporal_train_test_split</span><br><span class="line">from sktime.performance_metrics.forecasting import mean_absolute_percentage_error</span><br><span class="line">from sktime.utils.plotting import plot_series</span><br><span class="line">cashflow = pd.read_csv(<span class="string">&#x27;CashFlowRecordsAll22-23-four.csv&#x27;</span>, encoding=<span class="string">&#x27;gbk&#x27;</span>)  </span><br><span class="line">cashflow[<span class="string">&#x27;date&#x27;</span>] = pd.to_datetime(cashflow[<span class="string">&#x27;date&#x27;</span>])</span><br><span class="line">cashflow.set_index(<span class="string">&#x27;date&#x27;</span>, inplace=True)  </span><br><span class="line">y = cashflow[<span class="string">&#x27;sum_y&#x27;</span>]</span><br><span class="line">y_train, y_test = temporal_train_test_split(y, test_size=31)  </span><br><span class="line">fh = ForecastingHorizon(y_test.index, is_relative=False)</span><br><span class="line"><span class="comment"># 调参</span></span><br><span class="line">forecaster = Prophet(</span><br><span class="line">    seasonality_mode=<span class="string">&#x27;additive&#x27;</span>, </span><br><span class="line">    n_changepoints=20,  </span><br><span class="line">    changepoint_prior_scale=0.001,</span><br><span class="line">    holidays_prior_scale=5,</span><br><span class="line">    seasonality_prior_scale=10  </span><br><span class="line">)</span><br><span class="line">forecaster.fit(y_train)</span><br><span class="line">y_pred = forecaster.predict(fh)  </span><br><span class="line">MAPE = mean_absolute_percentage_error(y_test, y_pred, symmetric=False)</span><br><span class="line"><span class="built_in">print</span>(f<span class="string">&quot;Model:Prophet, MAPE: &#123;MAPE:.2f&#125;&quot;</span>)</span><br><span class="line">plot_series(y_train, y_test, y_pred, labels=[<span class="string">&quot;y_train&quot;</span>, <span class="string">&quot;y_test&quot;</span>, <span class="string">&quot;y_pred&quot;</span>], title=f<span class="string">&#x27;Prophet: &#123;MAPE:.2f&#125;&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Model:Prophet, MAPE: 0.49</span><br></pre></td></tr></table></figure>
+
+<p><strong>二、直接使用Prophet并加入其他特征</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">import pandas as pd</span><br><span class="line">from prophet import Prophet </span><br><span class="line">from sklearn.metrics import mean_absolute_percentage_error</span><br><span class="line"></span><br><span class="line"><span class="comment"># 读取数据,过滤到2023年</span></span><br><span class="line"><span class="built_in">df</span> = pd.read_csv(<span class="string">&#x27;CashFlowRecordsAll22-23-five.csv&#x27;</span>)</span><br><span class="line"><span class="built_in">df</span> = df.rename(columns=&#123;<span class="string">&#x27;date&#x27;</span>: <span class="string">&#x27;ds&#x27;</span>, <span class="string">&#x27;sum_y&#x27;</span>: <span class="string">&#x27;y&#x27;</span>&#125;)</span><br><span class="line"><span class="comment"># 转换日期列为datetime格式</span></span><br><span class="line"><span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>] = pd.to_datetime(<span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>])</span><br><span class="line"><span class="built_in">df</span> = <span class="built_in">df</span>[<span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>] &gt; <span class="string">&#x27;2022-12-31&#x27;</span>]</span><br><span class="line"><span class="comment"># 设置日期为索引</span></span><br><span class="line"><span class="comment">#df = df.set_index(&#x27;ds&#x27;) </span></span><br><span class="line"><span class="comment"># 选取 2023-06-01 到 2023-06-30 之间的数据</span></span><br><span class="line">train = <span class="built_in">df</span>[(<span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>] &gt;= <span class="string">&#x27;2023-01-01&#x27;</span>) &amp; (<span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>] &lt;= <span class="string">&#x27;2023-06-30&#x27;</span>)]</span><br><span class="line"><span class="comment"># 选取 2023-07-01 到 2023-07-31 之间的数据  </span></span><br><span class="line"><span class="built_in">test</span> = <span class="built_in">df</span>[(<span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>] &gt;= <span class="string">&#x27;2023-07-01&#x27;</span>) &amp; (<span class="built_in">df</span>[<span class="string">&#x27;ds&#x27;</span>] &lt;= <span class="string">&#x27;2023-07-31&#x27;</span>)]</span><br><span class="line"><span class="comment"># 建立Prophet模型,包含 regressor</span></span><br><span class="line">forecaster = Prophet(</span><br><span class="line">    seasonality_mode=<span class="string">&#x27;additive&#x27;</span>, </span><br><span class="line">    n_changepoints=20,  </span><br><span class="line">    changepoint_prior_scale=0.001,</span><br><span class="line">    holidays_prior_scale=5,</span><br><span class="line">    seasonality_prior_scale=10  </span><br><span class="line">)</span><br><span class="line">forecaster.add_regressor(<span class="string">&#x27;week&#x27;</span>) <span class="comment">#每日星期几</span></span><br><span class="line">forecaster.add_regressor(<span class="string">&#x27;Monthly&#x27;</span>) <span class="comment">#月度总收入</span></span><br><span class="line">forecaster.add_regressor(<span class="string">&#x27;holiday&#x27;</span>) <span class="comment">#是否休息</span></span><br><span class="line">forecaster.add_regressor(<span class="string">&#x27;check&#x27;</span>) <span class="comment">#是否考核日</span></span><br><span class="line">forecaster.add_regressor(<span class="string">&#x27;day&#x27;</span>) <span class="comment">#几号</span></span><br><span class="line"><span class="comment"># 使用1-6月数据拟合</span></span><br><span class="line">forecaster.fit(train)</span><br><span class="line"><span class="comment"># 预测7月每日现金流入</span></span><br><span class="line">future = forecaster.make_future_dataframe(periods=len(<span class="built_in">test</span>))</span><br><span class="line">future = pd.merge(future, <span class="built_in">test</span>[[<span class="string">&#x27;ds&#x27;</span>]], on=<span class="string">&#x27;ds&#x27;</span>, how=<span class="string">&#x27;inner&#x27;</span>)</span><br><span class="line">forecast = forecaster.predict(<span class="built_in">test</span>)</span><br><span class="line"><span class="comment"># 计算MAPE评估预测效果</span></span><br><span class="line">y_true = <span class="built_in">test</span>[<span class="string">&#x27;y&#x27;</span>]</span><br><span class="line">y_pred = forecast.loc[forecast[<span class="string">&#x27;ds&#x27;</span>].isin(<span class="built_in">test</span>[<span class="string">&#x27;ds&#x27;</span>]), <span class="string">&#x27;yhat&#x27;</span>]</span><br><span class="line">mape = mean_absolute_percentage_error(y_true, y_pred)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;优化后的MAPE: &#x27;</span>, mape)</span><br><span class="line"><span class="comment"># 查看预测结果</span></span><br><span class="line"><span class="built_in">print</span>(forecast[[<span class="string">&#x27;ds&#x27;</span>, <span class="string">&#x27;yhat&#x27;</span>, <span class="string">&#x27;yhat_lower&#x27;</span>, <span class="string">&#x27;yhat_upper&#x27;</span>]])</span><br><span class="line"><span class="comment"># 预测7月每日现金流入</span></span><br><span class="line">forecast = forecaster.predict(<span class="built_in">test</span>)</span><br><span class="line"><span class="comment"># 计算MAPE评估预测效果</span></span><br><span class="line">y_true = <span class="built_in">test</span>[<span class="string">&#x27;y&#x27;</span>]</span><br><span class="line">y_pred = forecast[<span class="string">&#x27;yhat&#x27;</span>]</span><br><span class="line">mape = mean_absolute_percentage_error(y_true, y_pred)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;MAPE: &#x27;</span>, mape)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MAPE:  0.7522215857136401</span><br></pre></td></tr></table></figure>
+
+<h4 id="结论："><a href="#结论：" class="headerlink" title="结论："></a>结论：</h4><p>sktime框架下的Prophet无法引入新的特征，但对Prophet有优化。</p>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/457634985">干货！时间序列预测神器-Prophet『实现篇』 - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/72277a2dd5ad">结合 Prophet 的原理理解 Prophet 的使用 - 简书 (jianshu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/86350981">Prophet: 时间序列预测库 - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://bravey.github.io/2019-12-20-LSTM%E4%B8%8EProphet%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E9%A2%84%E6%B5%8B%E5%AE%9E%E9%AA%8C">LSTM与Prophet时间序列预测实验 | BraveY</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_40903057/article/details/95318891">时间序列分析 - AirPassenger_airpassengers时间序列数据_涤生（bluez）的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/592814630">2022 年时间序列分析最顶流的 Python 库 - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/453296592">推荐 3 个 Python 时序分析神器！ - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/102186988">tsfresh - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/393706324">时间序列预测从入门到精通（三）：深度学习方法 - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://tech-zh.netlify.app/articles/zh-cn511782/">🛒 🚘 😿 Sktime：用于机器学习和时间序列的统一Python库 🐥 🥞 👩🏾‍🎨 (tech-zh.netlify.app)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43691167/article/details/121189586">sktime_如何安装sktime_Pre.Real的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/skyskytotop/article/details/123895815">时间序列库sktime 输入和模型构建介绍_预测模型的开发与应用研究的博客-CSDN博客</a>.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://vbrun-lab.github.io/2023/08/18/2023-08-18/" data-id="cllg7olxh0000jk8b0iqih9ri" data-title="时间序列序列学习（五）--Prophet" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/" rel="tag">时间序列</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/07/18/2023-07-18/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">To Do</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/" rel="tag">github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/" rel="tag">时间序列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 10px;">效率</a> <a href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/" style="font-size: 20px;">时间序列</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 20px;">机器学习</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/08/18/2023-08-18/">时间序列序列学习（五）--Prophet</a>
+          </li>
+        
+          <li>
+            <a href="/2023/07/18/2023-07-18/">To Do</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/28/2023-06-28/">时间序列（三）—— SARIMAX带有衍生变量的时间序列预测</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/27/2023-06-27/">时间序列（二）——复现ARIMA预测AirPassenger</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/2023-06-17/">时间序列学习（一）——基础</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
